@@ -1,0 +1,6 @@
+<FilesMatch "\.(php)$">
+    AuthName "Smartpolis private area"
+    AuthType Basic
+    AuthUserFile /usr/local/www/data/a/amiro/smartpolis/smartpolis/.htpasswd
+    Require valid-user
+</FilesMatch>
