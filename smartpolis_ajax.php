@@ -5,9 +5,38 @@
 
   include_once(dirname(__FILE__) . '/smartpolis/settings.class.php');
 
+  function sendFirstEmail() {
+	$name  = htmlspecialchars(strip_tags($_POST['name']));
+	$email = htmlspecialchars(strip_tags($_POST['email']));
+	$phone = htmlspecialchars(strip_tags($_POST['phone']));
+    $settings = new smartPolisSettings();
+    $emlTitle = '[' . date('d.m.Y, H:i:s') . '] Умный Полис - начало расчёта';
+    $emlBody = <<<EOF
+Здравствуйте!
+На сайте {$_SERVER['SERVER_NAME']} была запущена процедура расчёта стоимости полисов:
+
+ФИО:        {$name}
+E-mail:     {$email}
+Телефон:    {$phone}
+Информация: http://умный-полис.рф/#{$_SESSION['cascoResultId']}
+
+--
+С уважением,
+почтовый робот сайта {$_SERVER['SERVER_NAME']}
+EOF;
+    $emlTitle   = '=?utf-8?B?' . base64_encode($emlTitle) . '?=';
+    $emlBody    = chunk_split(base64_encode($emlBody));
+    $emlTo      = '=?utf-8?B?' . base64_encode('Администратор “Умного Полиса”') . '?= <' . $settings->get('smartpolis_target_email') . '>';
+    $emlHeaders = "MIME-Version: 1.0\r\n" .
+		              "From: " . '=?utf-8?B?' . base64_encode('Умный Полис') . '?= <noreply@' . $_SERVER['SERVER_NAME'] . '>' . "\r\n" .
+                  "Content-Type: text/plain; charset=utf-8\r\n" .
+                  "Content-Transfer-Encoding: base64\r\n";
+    mail($emlTo, $emlTitle, $emlBody, $emlHeaders);
+  }
+
   $casco = new smartpolisCascoApi();
 
-  $requestType = $_REQUEST['type'];
+  $requestType = @$_REQUEST['type'];
 
   switch($requestType) {
     case 'car_models': {
@@ -55,6 +84,11 @@
       echo $casco->getResult($_REQUEST['id']);
       break;
     }
+	case 'showResultList': {
+		sendFirstEmail();
+		echo '{"status": "success"}';
+		break;
+	}
     default: echo $casco->getCarMarks();
   }
 ?>

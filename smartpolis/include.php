@@ -7,11 +7,13 @@
 require_once(dirname(__FILE__) . '/settings.class.php');
 
 function smartpolis_write_head($includeJQuery = true) {
+    echo '<link rel="stylesheet" href="smartpolis/css/bootstrap.min.css" />' . "\n";
     echo '<link rel="stylesheet" href="smartpolis/css/smartpolis.css" />' . "\n";
     echo '<link rel="stylesheet" href="smartpolis/css/style.css" />' . "\n";
     if ($includeJQuery)
         echo '<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>' . "\n";
-    echo '<script type="text/javascript" src="smartpolis/js/smartpolis.js"></script>' . "\n";
+    echo '<script type="text/javascript" src="smartpolis/js/bootstrap.min.js"></script>' . "\n";
+    echo '<script type="text/javascript" src="smartpolis/js/smartpolis.js?v=2"></script>' . "\n";
 }
 
 function smartpolis_write_body() {
@@ -27,27 +29,30 @@ function smartpolis_write_body() {
         $iwant    = htmlspecialchars(strip_tags($_POST['iwant']));
         $address  = htmlspecialchars(strip_tags($_POST['address']));
         $comments = htmlspecialchars(strip_tags($_POST['comments']));
+        $rqid     = htmlspecialchars(strip_tags($_POST['rqid']));
 
         $emlBody = <<<EOF
 Здравствуйте!
-На сайте {$_SERVER['SITE_NAME']} была заполнена форма “Умный полис”:
+На сайте {$_SERVER['SERVER_NAME']} была заполнена форма “Умный полис”:
 
 ФИО:                    {$fio}
 Телефон:                {$phone}
 Дата оформления полиса: {$date}
 Способ доставки:        {$iwant}
 Адрес:                  {$address}
+Запрос:                 http://умный-полис.рф/#{$rqid}
 Комментарии:            {$comments}
 
 --
 С уважением,
-почтовый робот сайта {$_SERVER['SITE_NAME']}
+почтовый робот сайта {$_SERVER['SERVER_NAME']}
 EOF;
 
         $emlTitle   = '=?utf-8?B?' . base64_encode($emlTitle) . '?=';
         $emlBody    = chunk_split(base64_encode($emlBody));
         $emlTo      = '=?utf-8?B?' . base64_encode('Администратор “Умного Полиса”') . '?= <' . $settings->get('smartpolis_target_email') . '>';
         $emlHeaders = "MIME-Version: 1.0\r\n" .
+		                  "From: " . '=?utf-8?B?' . base64_encode('Умный Полис') . '?= <noreply@' . $_SERVER['SERVER_NAME'] . '>' . "\r\n" .
                       "Content-Type: text/plain; charset=utf-8\r\n" .
                       "Content-Transfer-Encoding: base64\r\n";
 
@@ -59,6 +64,7 @@ EOF;
         <?
     }
     ?>
+        <div class="cl" style="clear:both;display: block;"></div>
         <div class="smartpolis_before_info">
           <?php echo $settings->get('smartpolis_message_before_button'); ?>
         </div>
@@ -118,7 +124,8 @@ EOF;
               }
             ?>
             <div class="b-rasch">
-              <input class="but" name="" type="submit" value=" " />
+              <input class="btn btn-warning" name="" type="submit" value="Рассчитать" />
+              <div class="b-loading" style="display:none"> </div>
             </div><!--end b-rasch-->
             <br />
           </form>
@@ -133,6 +140,7 @@ EOF;
           <div id='smartpolis_order_form'>
             <h3 class='smartpolis_order_form_title'>Заявка на получение полиса</h3>
             <form method="post">
+            <input type="hidden" name="rqid" value="">
             <table>
               <tr>
                 <td>Ваше имя<br/><input type="text" name="fio" /></td>
@@ -145,8 +153,8 @@ EOF;
               </tr>
               <tr>
                 <td>Мне будет удобно:<br/>
-                <input type="radio" name="iwant" value="Самовывоз" />Подъехать к Вам в офис и забрать оформленный полис КАСКО/ОСАГО<br/>
-                <input type="radio" name="iwant" value="Доставка по адресу" />Получить полис по адресу:<br/>
+                <input type="radio" class="radio-fix" name="iwant" value="Самовывоз" style="margin: -4px 8px 0 0;" />Подъехать к Вам в офис и забрать оформленный полис КАСКО/ОСАГО<br/>
+                <input type="radio" class="radio-fix" name="iwant" value="Доставка по адресу" style="margin: -4px 8px 0 0;" />Получить полис по адресу:<br/>
                 <textarea name="address"></textarea><br/>
                 <span>(Доставка полиса КАСКО производится бесплатно)</span>
                 </td>
@@ -157,14 +165,18 @@ EOF;
               </tr>
               <tr>
                 <td>
-                  <button id="smartpolis_order_form_close">Закрыть</button>
-                  <button id="smartpolis_order_form_submit" type="submit">Отправить</button>
+                  <!--<button id="smartpolis_order_form_close">Закрыть</button>-->
+                  <a id="smartpolis_order_form_close" href="javascript:void(0)" class="btn btn disabled" style="position: relative;left: 479px;top: -500px;cursor: pointer"><i class="icon-remove"></i></a>
+                  <!--<button id="smartpolis_order_form_submit" type="submit">Отправить</button>-->
+                  <a id="smartpolis_order_form_submit" class="btn btn-large btn-warning" href="#">Оформить заказ</a>
                   </td>
               </tr>
 
             </table>
             </form>
           </div>
+        <div class="b-modal-background" style="display:none"></div>
+        <div class="cl" style="clear:both;display: block"> </div>
     <?
 }
 

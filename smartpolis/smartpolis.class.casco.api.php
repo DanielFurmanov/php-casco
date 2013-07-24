@@ -85,10 +85,11 @@
       if (empty($res)) return json_encode(false);
       $res = json_decode($res);
       $result = array();
-      $result['company_id'] = $res->insurance_company->id;
-      $result['logo'] = $res->insurance_company->logo;
-      $result['result_id'] = $res->id;
-      $result['sum'] = ceil($res->sum);
+      $result['company_id'] = @$res->insurance_company->id;
+      $result['logo'] = @$res->insurance_company->logo;
+      $result['result_id'] = @$res->id;
+      $result['sum'] = ceil(@$res->sum);
+			$result['rqid'] = $_SESSION['cascoResultId'];
       
       $settings = new smartPolisSettings();
       $companies = $settings->get('smartpolis_companies');

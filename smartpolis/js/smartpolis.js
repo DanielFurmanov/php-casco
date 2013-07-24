@@ -1,8 +1,11 @@
 function smartpolis() {
+  var priceFormat = function (v) {
+      return v.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  };
+
   var self = this;
   var smartpolis_show_type = jQuery('#smartpolis_car_form input[name=smartpolis_show_type]').val();
-  var smartpolis_ajax_url = 'smartpolis_ajax.php';
-  var broker_name = " в Stabilitas";
+  var smartpolis_ajax_url = $.smartpolisBase + 'smartpolis_ajax.php';
   self.updateCarMarks = function() {
     jQuery('#smartpolis_car_marks').children().remove();
     jQuery.getJSON(smartpolis_ajax_url, {'type':'car_marks'}, function(r) {
@@ -14,7 +17,9 @@ function smartpolis() {
       self.updateCarModels();
     });
     jQuery('#smartpolis_order_form_close').live('click', function () {
-      jQuery('#smartpolis_order_form').hide(200);
+      jQuery('#smartpolis_order_form').fadeOut(200);
+      jQuery('.b-modal-background').fadeOut(200);
+      return false;
     });
   }
 
@@ -82,10 +87,34 @@ function smartpolis() {
     self.prepareSubmitButton();
     // Валидация формы на отправке и отправка запроса
     jQuery('#smartpolis_car_form').bind('submit', function() {
+      console.log('Click...');
       if ( self.hasErrorForm() ) {
         return false;
       }
-      self.getResult();
+      if (jQuery('#smartpolis_contact_form').css('display') == 'block') {
+          if (jQuery('#smartpolis_result').css('display') == 'block') {
+              jQuery('#smartpolis_message_before_form,#smartpolis_result').css('display', 'none');
+              self.getResult();
+              jQuery(this).find('input:submit').attr('disabled', false);
+          } else {
+              jQuery.post(
+                  smartpolis_ajax_url,
+                  {
+                      type:  'showResultList',
+                      name:  jQuery('#smartpolis_client_name').val(),
+                      email: jQuery('#smartpolis_client_email').val(),
+                      phone: jQuery('#smartpolis_client_phone').val()
+                  },
+                  function (r) {
+                      console.log('showResultList return');
+                  }
+              );
+              jQuery('#smartpolis_message_before_form,#smartpolis_result').css('display', 'block');
+          }
+      } else {
+          jQuery('#smartpolis_message_before_form').css('display', 'block');
+          self.getResult();
+      }
       return false;
     });
 
@@ -99,9 +128,8 @@ function smartpolis() {
   }
 
   self.getResult = function() {
-    jQuery('#smartpolis_message_before_form').css('display', 'block');
+    var $loading = $(".b-rasch .b-loading").show();
     jQuery('#smartpolis_car_form input:submit').attr('disabled', 'disabled').addClass('disabled');
-
     jQuery.getJSON(smartpolis_ajax_url, jQuery('#smartpolis_car_form').serialize(), function(r) {
       var count_result = r.length;
       var headers_table_was_show = false;
@@ -110,7 +138,10 @@ function smartpolis() {
       jQuery(r).each(function() {
         var company = this;
         jQuery.getJSON(smartpolis_ajax_url, { 'type':'getResult', 'id':company.id }, function(r){
-          count_result--;
+          if (!(--count_result)) {
+            $loading.hide();
+          }
+          jQuery('#smartpolis_order_form input[name=rqid]').val(r.rqid);
           jQuery('#smartpolis_wait_count_result').html('Осталось расчитать: ' + count_result);
           if ( smartpolis_show_type != 'send_by_letter' ) {
             if ( ! headers_table_was_show ) {
@@ -118,8 +149,8 @@ function smartpolis() {
                   <div class="pol2"></div>\
                   <div class="row-th">\
                   <div class="td1"></div>\
-                  <div class="td2">Тариф страховой компании</div>\
-                  <div class="hidden smartpolis_broker_tariff_title td3">Тариф' + broker_name +' </div>\
+                  <div class="td2">Стоимость в<br>страховой компании</div>\
+                  <div class="td3">Наше спец.<br>предложение</div>\
                   </div><!--end row-th-->';
               jQuery(text).appendTo('#smartpolis_result');
               headers_table_was_show = true;
@@ -127,8 +158,8 @@ function smartpolis() {
             if (r.sum && r.sum!=0) {
               text ='<div class="row">\
                   <div class="td1"><img alt="" src="http://casco.cmios.ru/' + r.logo + '" style="width: 100px; height: 40px;margin-top: 7px;"/></div>\
-                  <div class="td2">' + r.sum + ' руб.</div>\
-                  <div class="smartpolis_broker_tariff td3"><div class="hidden">' + r.our_sum + ' руб. (-' + r.discount + '%) </div><a class="but" href="#" onclick="javascript: jQuery(\'#smartpolis_order_form\').css(\'display\', \'block\'); return false;"></a></div>\
+                  <div class="td2">' + priceFormat(r.sum) + ' руб.</div>\
+                  <div class="td3"><strong>' + priceFormat(r.our_sum) + '</strong> руб. (-' + r.discount + '%) <a class="btn" href="#" onclick="javascript: $(\'#smartpolis_order_form\').fadeIn(200); $(\'.b-modal-background\').fadeIn(200); return false;" style="float:right;margin: -12px 12px 0 0;"><i class="icon-shopping-cart"></i>&nbsp;Заказать полис</a></div>\
                   </div><!--end row-->';
 
 
@@ -144,7 +175,27 @@ function smartpolis() {
                 text += '<td class="order"><button type="submit" onclick="javascript: jQuery(\'#smartpolis_order_form\').css(\'display\', \'block\'); return false;">Купить со скидкой ' + r.result_id + '</td>';
               }
               text += '</tr>';
-*/              jQuery(text).appendTo('#smartpolis_result');
+*/
+                var $insertAfter = null,
+                    $rows       = $("#smartpolis_result .row"),
+                    myVal       = parseInt(r.our_sum);
+                for (var i = 0; i < $rows.length; ++i) {
+                    var $row = $($rows.get(i));
+                    var thisVal = $row.find(".td3 strong").text().replace(" ", "");
+                    console.log("TV=" + thisVal + ", MV=" + myVal);
+                    if (thisVal < myVal) {
+                        $insertAfter = $row;
+                    } else {
+                        break;
+                    }
+                }
+                if (!$insertAfter)
+                    $insertAfter = $("#smartpolis_result .row-th");
+                if ($insertAfter) {
+                    $(text).insertAfter($insertAfter);
+                } else {
+                    $(text).appendTo('#smartpolis_result');
+                }
             }
 
           }
@@ -160,6 +211,9 @@ function smartpolis() {
   }
 
   self.prepareSubmitButton = function() {
+    $("#smartpolis_order_form_submit").live("click", function () {
+        $("#smartpolis_order_form form").sumbit();
+    });
     if ( smartpolis_show_type != 'form_after_show' ) {
       jQuery('#smartpolis_car_form input:submit').html('Продолжить');
     }
@@ -211,7 +265,7 @@ function smartpolis() {
       if (jQuery('#smartpolis_contact_form:visible').length==0) {
         jQuery('#smartpolis_car_form button:submit').html('Расчитать');
         jQuery('#smartpolis_contact_form').css('display', 'block');
-        return true;
+        return false;
       }
 
       if ( self.hasErrorContactFormRequiredFields() ) {
