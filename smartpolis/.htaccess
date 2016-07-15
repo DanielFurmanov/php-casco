@@ -1,6 +1,0 @@
-<FilesMatch "index\.(php)$">
-    AuthName "Smartpolis private area"
-    AuthType Basic
-    AuthUserFile /home/antirisk/yourkasko.ru/docs/smpolis/smartpolis/.htpasswd
-    Require valid-user
-</FilesMatch>
