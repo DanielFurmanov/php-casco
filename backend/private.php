@@ -1,6 +1,6 @@
 <?php
-define("ITFORM_LOGIN", 'itform-demo@b2bpolis.ru 111');
-define("ITFORM_PASSWORD", 'q%3D%26d 111');
+define("ITFORM_LOGIN", 'demowebcalc@test.ru');
+define("ITFORM_PASSWORD", 'a8f15a4ff');
 
 //Удалите старый файл если изменили логин и пароль
 //Измените имя файла вкотором храниться токен!!!
