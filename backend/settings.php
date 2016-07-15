@@ -10,14 +10,14 @@ function ItSetUpMailData($json)
 
 function ItSetUpMail($mail)
 {
-    $mail->setFrom('robot@itform.kasko');
+    $mail->setFrom('test@test.ru');
     $mail->CharSet = 'UTF-8';
 }
 
 function ItSetUpBody($json, $mail)
 {
     if($json->type === 'report') {
-    $address = '4mebox@gmail.com';
+    $address = 'test@test.ru';
     $subject = 'Заявка на страхование с сайта';
 
 $text = <<<HERE
