@@ -4,7 +4,8 @@ define('OPTIONS_REQUEST', $_SERVER['REQUEST_METHOD'] === 'OPTIONS');
 
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
-header('Access-Control-Allow-Headers: x-itform-forward');
+header('Access-Control-Allow-Headers: access-control-allow-origin, cache-control, x-itform-forward');
+
 
 //polyfill for nginx
 if (!function_exists('getallheaders')) {
