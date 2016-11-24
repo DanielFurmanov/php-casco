@@ -14,6 +14,11 @@
 4. Для расширения кол-ва страховых компаний, запросите логин и пароль у вашего менеджера в поддержке сервиса Умный полис (helpdesk@b2bpolis.ru)
    Полученный логин/пароль необходимо ввести в в файле `backend/private.php`.
    
+## Демо
+
+Демо осаго: http://b2bpolis.ru/calc-widget/demo/other/index-osago.html
+Демо каско: http://b2bpolis.ru/calc-widget/demo/other/index-kasko.html
+   
 ## Релиз	
 Список версий и изменения к ним:
 
