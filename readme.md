@@ -17,6 +17,7 @@
 ## Демо
 
 Демо осаго: http://b2bpolis.ru/calc-widget/demo/other/index-osago.html
+
 Демо каско: http://b2bpolis.ru/calc-widget/demo/other/index-kasko.html
    
 ## Релиз	
